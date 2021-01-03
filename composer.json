@@ -1,0 +1,20 @@
+{
+    "name": "nadialabs/nadia-parsedown",
+    "description": "A customized Markdown parser based on Parsedown",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "erusev/parsedown-extra": "^0.8",
+        "symfony/process": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8.36"
+    },
+    "autoload": {
+        "psr-4": {
+            "NadiaParseDown\\": "src/"
+        }
+    }
+}
