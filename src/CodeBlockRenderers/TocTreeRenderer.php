@@ -11,6 +11,7 @@ class TocTreeRenderer implements RendererInterface
     const CODE_BLOCK_LANGUAGE = 'toc-tree';
 
     public static $parsedFiles = [];
+    public static $parsedTocTrees = [];
 
     /**
      * @var NadiaParseDown
@@ -57,6 +58,8 @@ class TocTreeRenderer implements RendererInterface
         if (empty($tocTree->nodes)) {
             return '';
         }
+
+        static::$parsedTocTrees[] = $tocTree;
 
         return $this->renderTocTree($tocTree, $maxDepth) . PHP_EOL;
     }
