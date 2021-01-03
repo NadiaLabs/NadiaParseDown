@@ -79,7 +79,9 @@ class TocTreeRenderer implements RendererInterface
         $tocTree = (object) ['parent' => null, 'level' => 0, 'text' => 'root', 'nodes' => []];
 
         foreach ($filePaths as $filePath) {
-            $parseDown = (clone $this->parseDown)->setBlockIdPrefix($filePath);
+            $parseDown = clone $this->parseDown;
+
+            $parseDown->setBlockIdPrefix($filePath);
 
             # Standardize line breaks
             $text = str_replace(array("\r\n", "\r"), "\n", file_get_contents($filePath));
