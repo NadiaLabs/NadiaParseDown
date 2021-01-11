@@ -11,6 +11,9 @@ class TocTreeRenderer implements RendererInterface
     const CODE_BLOCK_LANGUAGE = 'toc-tree';
 
     public static $parsedFiles = [];
+    /**
+     * @var TocTreeNode[]
+     */
     public static $parsedTocTrees = [];
 
     /**
@@ -55,7 +58,7 @@ class TocTreeRenderer implements RendererInterface
 
         $tocTree = $this->parseTocTree($element['text']);
 
-        if (empty($tocTree->nodes)) {
+        if (!$tocTree->hasNodes()) {
             return '';
         }
 
@@ -67,7 +70,7 @@ class TocTreeRenderer implements RendererInterface
     /**
      * @param string $tocText
      *
-     * @return object
+     * @return TocTreeNode
      *
      * @throws Exception
      */
@@ -76,7 +79,7 @@ class TocTreeRenderer implements RendererInterface
         $docRootDir = $this->getDocRootDir();
         $filePaths = $this->parseFilePaths($tocText);
 
-        $tocTree = (object) ['parent' => null, 'level' => 0, 'text' => 'root', 'nodes' => []];
+        $tocTree = new TocTreeNode(0, 'root');
 
         foreach ($filePaths as $filePath) {
             $parseDown = clone $this->parseDown;
@@ -94,7 +97,11 @@ class TocTreeRenderer implements RendererInterface
             $relatedFilePath = str_replace($docRootDir, '', $filePath);
 
             if (!isset(static::$parsedFiles[$relatedFilePath])) {
-                static::$parsedFiles[$relatedFilePath] = $this->parseDown->renderBlocks($blockTree);
+                static::$parsedFiles[$relatedFilePath] = [
+                    'filePath' => $relatedFilePath,
+                    'targetId' => $parseDown->getOption('block_id_prefix'),
+                    'html' => $parseDown->renderBlocks($blockTree),
+                ];
             }
 
             $this->buildTocTreeNodes($blockTree, $tocTree);
@@ -105,20 +112,20 @@ class TocTreeRenderer implements RendererInterface
 
     /**
      * @param BlockTreeNode $blockTree
-     * @param object $tocTree
+     * @param TocTreeNode $tocTree
      */
-    private function buildTocTreeNodes(BlockTreeNode $blockTree, $tocTree)
+    private function buildTocTreeNodes(BlockTreeNode $blockTree, TocTreeNode $tocTree)
     {
         foreach ($blockTree->getNodes() as $blockTreeNode) {
             if ($blockTreeNode->hasText()) {
-                $newTocTreeNode = (object) [
-                    'parent' => $tocTree,
-                    'level' => $blockTreeNode->getLevel(),
-                    'text' => $blockTreeNode->getText(),
-                    'nodes' => [],
-                    'url' => '#' . $blockTreeNode->getId(),
-                ];
-                $tocTree->nodes[] = $newTocTreeNode;
+                $newTocTreeNode = new TocTreeNode(
+                    $blockTreeNode->getLevel(),
+                    $blockTreeNode->getText(),
+                    $tocTree,
+                    '#' . $blockTreeNode->getId()
+                );
+                $tocTree->setTargetIdPrefix($blockTreeNode->getIdPrefix());
+                $tocTree->addNode($newTocTreeNode);
 
                 $this->buildTocTreeNodes($blockTreeNode, $newTocTreeNode);
             }
@@ -126,25 +133,28 @@ class TocTreeRenderer implements RendererInterface
     }
 
     /**
-     * @param object $tree
+     * @param TocTreeNode $tree
      * @param int $maxDepth
      *
      * @return string
      */
-    private function renderTocTree($tree, $maxDepth)
+    private function renderTocTree(TocTreeNode $tree, $maxDepth)
     {
         if ($maxDepth < 1) {
             return '';
         }
 
-        $indent1 = str_repeat(' ', 4 * $tree->level + 2);
-        $indent2 = str_repeat(' ', 4 * $tree->level + 4);
-        $indent3 = str_repeat(' ', 4 * $tree->level + 6);
+        $indent1 = str_repeat(' ', 4 * $tree->getLevel() + 2);
+        $indent2 = str_repeat(' ', 4 * $tree->getLevel() + 4);
+        $indent3 = str_repeat(' ', 4 * $tree->getLevel() + 6);
         $html = $indent1 . '<ul>' . PHP_EOL;
 
-        foreach ($tree->nodes as $node) {
+        foreach ($tree->getNodes() as $node) {
             $nodeHtml = $indent2 . '<li>' . PHP_EOL;
-            $nodeHtml .= $indent3 . '<a href="' . NadiaParseDown::escape($node->url) . '">' . $node->text . '</a>';
+            $nodeHtml .= $indent3 .
+                '<a href="' . NadiaParseDown::escape($node->getUrl()) . '">' .
+                $node->getText() .
+                '</a>';
 
             if ($maxDepth > 1) {
                 --$maxDepth;
