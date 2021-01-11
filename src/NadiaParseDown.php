@@ -357,7 +357,7 @@ class NadiaParseDown extends ParsedownExtra
         }
 
         if ($tree->hasBlock()) {
-            if (1 || $tree->hasNodes()) {
+            if ($tree->hasText()) {
                 $markup .= $spaces . '<div';
 
                 if ($tree->hasId()) {
@@ -377,7 +377,7 @@ class NadiaParseDown extends ParsedownExtra
         }
 
         if ($tree->hasBlock()) {
-            if (1 || $tree->hasNodes()) {
+            if ($tree->hasText()) {
                 $markup .= $spaces . '</div>' . "\n";
             }
         }
