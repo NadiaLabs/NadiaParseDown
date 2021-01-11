@@ -410,11 +410,13 @@ class NadiaParseDown extends ParsedownExtra
                 $text = $this->renderElement($block['element']);
                 $text = preg_match('/<h[1-6][^>]*>(.*)<\/h[1-6]>$/', $text, $matches) ? $matches[1] : '';
 
-                $id = $this->getOption('block_id_prefix') . ++$this->blockCount . '-' . md5($text);
+                $idPrefix = $this->getOption('block_id_prefix');
+                $id = $idPrefix . ++$this->blockCount . '-' . md5($text);
 
                 $newNode = (new BlockTreeNode())
                     ->setBlock($block)
                     ->setId($id)
+                    ->setIdPrefix($idPrefix)
                     ->setLevel($level)
                     ->setText($text);
 

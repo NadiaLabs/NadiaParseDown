@@ -13,6 +13,10 @@ class BlockTreeNode
      */
     private $id = '';
     /**
+     * @var string Tree node id prefix
+     */
+    private $idPrefix = '';
+    /**
      * @var int Tree nested level
      */
     private $level = 0;
@@ -73,6 +77,26 @@ class BlockTreeNode
     public function setId($id)
     {
         $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIdPrefix()
+    {
+        return $this->idPrefix;
+    }
+
+    /**
+     * @param string $idPrefix
+     *
+     * @return $this
+     */
+    public function setIdPrefix($idPrefix)
+    {
+        $this->idPrefix = $idPrefix;
 
         return $this;
     }
