@@ -157,19 +157,33 @@ class NadiaParseDown extends ParsedownExtra
      *
      * @param string $filePath
      *
-     * @return string
+     * @return RenderResult|null
      */
     public function render($filePath)
     {
         if (!file_exists($filePath)) {
-            return '';
+            return null;
         }
 
         $content = file_get_contents($filePath);
 
         $this->setBlockIdPrefix($filePath);
 
-        return $this->text($content);
+        // Copy from Parsedown.php
+        $this->DefinitionData = array();
+        $text = str_replace(array("\r\n", "\r"), "\n", $content);
+        $text = trim($text, "\n");
+        $lines = explode("\n", $text);
+        // Replace original `$markup = $this->lines($lines);`
+        $markup = $this->renderBlocks($blockTree = $this->parseBlocks($lines));
+        $markup = trim($markup, "\n");
+        // Copy from ParsedownExtra.php
+        $markup = preg_replace('/<\/dl>\s+<dl>\s+/', '', $markup);
+        if (isset($this->DefinitionData['Footnote'])) {
+            $markup .= "\n" . $this->element($this->buildFootnoteElement());
+        }
+
+        return new RenderResult($markup, $blockTree);
     }
 
     /**
