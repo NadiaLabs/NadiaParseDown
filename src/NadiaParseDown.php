@@ -352,6 +352,10 @@ class NadiaParseDown extends ParsedownExtra
         $spaces = str_repeat('  ', $indent);
         $markup = '';
 
+        if (1 === $indent) {
+            $markup .= '<div id="' . $this->getOption('block_id_prefix') . '" class="parsed-html-container">' . PHP_EOL;
+        }
+
         if ($tree->hasBlock()) {
             if (1 || $tree->hasNodes()) {
                 $markup .= $spaces . '<div';
@@ -376,6 +380,10 @@ class NadiaParseDown extends ParsedownExtra
             if (1 || $tree->hasNodes()) {
                 $markup .= $spaces . '</div>' . "\n";
             }
+        }
+
+        if (1 === $indent) {
+            $markup .= '</div>' . PHP_EOL;
         }
 
         return $markup;
